@@ -84,3 +84,64 @@ resource "azurerm_network_security_group" "nsg" {
     destination_address_prefix = "*"
   }
 }
+
+resource "azurerm_public_ip" "pip" {
+  count               = var.vm_count
+  name                = "pip-k8s-${count.index}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_network_interface" "nic" {
+  count               = var.vm_count
+  name                = "nic-k8s-${count.index}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.pip[count.index].id
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
+  count                     = var.vm_count
+  network_interface_id      = azurerm_network_interface.nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+resource "azurerm_linux_virtual_machine" "vm" {
+  count                           = var.vm_count
+  name                            = count.index == 0 ? "k8s-master" : "k8s-worker-${count.index}"
+  computer_name                   = count.index == 0 ? "k8s-master" : "k8s-worker-${count.index}"
+  location                        = azurerm_resource_group.rg.location
+  resource_group_name             = azurerm_resource_group.rg.name
+  size                            = var.vm_size
+  admin_username                  = var.admin_username
+  disable_password_authentication = true
+  network_interface_ids           = [azurerm_network_interface.nic[count.index].id]
+
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = file(var.ssh_public_key_path)
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = 30
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
+
+  custom_data = filebase64("${path.module}/cloud-init.yaml")
+}
