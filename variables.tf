@@ -1,0 +1,52 @@
+variable "location" {
+  description = "Região Azure"
+  type        = string
+  default     = "Brazil South"
+}
+
+variable "resource_group_name" {
+  description = "Nome do resource group"
+  type        = string
+  default     = "rg-k8s-course"
+}
+
+variable "vm_count" {
+  description = "Quantidade de VMs (1 control-plane + N-1 workers)"
+  type        = number
+  default     = 3
+}
+
+variable "vm_size" {
+  description = "SKU da VM. B2s é o mínimo viável pro control-plane do k8s"
+  type        = string
+  default     = "Standard_B2s"
+}
+
+variable "admin_username" {
+  description = "Usuário admin da VM"
+  type        = string
+  default     = "ubuntu"
+}
+
+variable "ssh_public_key_path" {
+  description = "Caminho da sua chave pública SSH"
+  type        = string
+  default     = "~/.ssh/id_rsa.pub"
+}
+
+variable "my_ip" {
+  description = "Seu IP público (pra liberar SSH só pra você). Ex: 200.1.2.3/32"
+  type        = string
+}
+
+variable "shutdown_time" {
+  description = "Horário do auto-shutdown diário, formato HHmm"
+  type        = string
+  default     = "2300"
+}
+
+variable "shutdown_timezone" {
+  description = "Timezone do auto-shutdown"
+  type        = string
+  default     = "E. South America Standard Time"
+}
