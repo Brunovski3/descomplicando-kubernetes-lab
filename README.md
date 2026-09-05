@@ -27,6 +27,22 @@ Ao final, os outputs trazem IP público e comando `ssh` pronto de cada VM.
 ## Auto-shutdown
 As VMs desligam sozinhas todo dia às 23h (horário de Brasília). Isso só *para* a VM (deallocate) — pra ligar de novo, use o Portal/CLI (`az vm start`) ou rode `terraform apply` de novo (não recria nada, só garante o estado).
 
+## Se o init reclamar do lock
+
+Erro `Inconsistent dependency lock file ... no version is selected` quer dizer que o
+`.terraform.lock.hcl` local ficou defasado em relacao ao `required_providers`. Resolve com:
+
+```bash
+terraform init -upgrade
+```
+
+Se persistir, apaga o lock e o cache e inicializa de novo:
+
+```bash
+rm -rf .terraform .terraform.lock.hcl
+terraform init
+```
+
 ## Destruir tudo
 
 ```bash
