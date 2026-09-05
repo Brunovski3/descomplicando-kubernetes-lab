@@ -50,3 +50,9 @@ variable "shutdown_timezone" {
   type        = string
   default     = "E. South America Standard Time"
 }
+
+variable "worker_vm_size" {
+  description = "SKU dos workers. 1 vCPU pra caber na cota de 4  que eu tenho por conta de ser estudante ;-;"
+  type        = string
+  default     = "Standard_B1ms"
+}

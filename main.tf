@@ -122,7 +122,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   computer_name                   = count.index == 0 ? "k8s-master" : "k8s-worker-${count.index}"
   location                        = azurerm_resource_group.rg.location
   resource_group_name             = azurerm_resource_group.rg.name
-  size                            = var.vm_size
+  size                            = count.index == 0 ? var.vm_size : var.worker_vm_size
   admin_username                  = var.admin_username
   disable_password_authentication = true
   network_interface_ids           = [azurerm_network_interface.nic[count.index].id]
